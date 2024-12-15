@@ -1,0 +1,2 @@
+# geoestatistica_disciplina_estatistica_espacial
+TODO
