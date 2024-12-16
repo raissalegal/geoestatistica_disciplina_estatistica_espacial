@@ -1,0 +1,42 @@
+---
+title: "Seminário 2 - Aplicação de um modelo Geoestatístico"
+output: html_notebook
+---
+
+# Uso de métodos estatísticos a fim de explorar ouro no território brasileiro
+
+## Bibliotecas
+```{r, warning=F,echo=FALSE}
+library(sf)
+library(ggplot2)
+library(dplyr)
+library(foreign)
+library(leaflet)
+```
+
+## Limpeza do banco de dados
+
+```{r}
+shapefile_data <- st_read(
+  "./dados/prov_dist_au_ocorrencia_au.shp",
+  quiet = TRUE)
+
+sum(is.na(shapefile_data$LATITUDE))
+sum(is.na(shapefile_data$LONGITUDE))
+
+data_clean <- shapefile_data[!is.na(shapefile_data$LATITUDE) & !is.na(shapefile_data$LONGITUDE), ] 
+data_clean$LATITUDE = as.numeric(data_clean$LATITUDE)
+data_clean$LONGITUDE= as.numeric(data_clean$LONGITUDE)
+
+ggplot(data_clean) +
+  geom_sf() + 
+  theme_minimal() + 
+  labs(title = "Map with Line Features")
+
+data_clean %>% 
+leaflet() %>%
+  addTiles() %>%
+  addPolygons(data = )  # Automatically uses the geometry from the sf object
+
+```
+
