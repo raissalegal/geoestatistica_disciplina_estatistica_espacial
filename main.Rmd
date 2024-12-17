@@ -19,6 +19,9 @@ library(dplyr)
 library(foreign)
 library(leaflet)
 library(leaflet.extras)
+library(lattice)
+library(gstat)
+library(sp)
 library(geostats)
 data("earthquakes")
 ```
@@ -37,16 +40,29 @@ asia_bbox <- st_as_sfc(st_bbox(c(xmin = 25, ymin = 5, xmax = 150, ymax = 50), cr
 asia_only <- dados %>%
   filter(st_intersects(geometry, asia_bbox, sparse = FALSE))
 
+color_scale <- colorNumeric(palette = "YlOrRd", domain = asia_only$mag)
+
 # Create a leaflet map
 leaflet(data = asia_only) %>%
   addTiles() %>%  # Add base map tiles
   addCircleMarkers(
-    radius = 4,               # Size of markers
-    color = "blue",           # Marker color
-    stroke = FALSE,           # No border for markers
-    fillOpacity = 0.8         # Transparency
+    radius = ~mag,
+    color = ~color_scale(mag),
+    stroke = FALSE,
+    fillOpacity = 0.8,
+    popup = ~paste("Magnitude:", mag)
   )
 ```
 
-Fazer variograma
-Fazer INLA
+## Variograma
+
+```{r}
+hist(asia_only$mag)
+
+variograma <- variogram(mag ~ 1, data = asia_only)
+variograma  
+
+plot(variograma)
+```
+
+## INLA
