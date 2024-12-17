@@ -1,42 +1,52 @@
 ---
 title: "Seminário 2 - Aplicação de um modelo Geoestatístico"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 # Uso de métodos estatísticos a fim de explorar ouro no território brasileiro
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
 ## Bibliotecas
-```{r, warning=F,echo=FALSE}
+```{r, warning=FALSE,echo=FALSE}
 library(sf)
 library(ggplot2)
 library(dplyr)
 library(foreign)
 library(leaflet)
+library(leaflet.extras)
+library(geostats)
+data("earthquakes")
 ```
 
 ## Limpeza do banco de dados
 
 ```{r}
-shapefile_data <- st_read(
-  "./dados/prov_dist_au_ocorrencia_au.shp",
-  quiet = TRUE)
+dados = earthquakes %>%
+  filter(year==2020) %>%
+  st_as_sf(coords = c("lon", "lat")) %>%
+  st_set_crs(4326)
 
-sum(is.na(shapefile_data$LATITUDE))
-sum(is.na(shapefile_data$LONGITUDE))
+asia_bbox <- st_as_sfc(st_bbox(c(xmin = 25, ymin = 5, xmax = 150, ymax = 50), crs = 4326))
 
-data_clean <- shapefile_data[!is.na(shapefile_data$LATITUDE) & !is.na(shapefile_data$LONGITUDE), ] 
-data_clean$LATITUDE = as.numeric(data_clean$LATITUDE)
-data_clean$LONGITUDE= as.numeric(data_clean$LONGITUDE)
+# Filter points within Asia
+asia_only <- dados %>%
+  filter(st_intersects(geometry, asia_bbox, sparse = FALSE))
 
-ggplot(data_clean) +
-  geom_sf() + 
-  theme_minimal() + 
-  labs(title = "Map with Line Features")
-
-data_clean %>% 
-leaflet() %>%
-  addTiles() %>%
-  addPolygons(data = )  # Automatically uses the geometry from the sf object
-
+# Create a leaflet map
+leaflet(data = asia_only) %>%
+  addTiles() %>%  # Add base map tiles
+  addCircleMarkers(
+    radius = 4,               # Size of markers
+    color = "blue",           # Marker color
+    stroke = FALSE,           # No border for markers
+    fillOpacity = 0.8         # Transparency
+  )
 ```
 
+Fazer variograma
+Fazer INLA
